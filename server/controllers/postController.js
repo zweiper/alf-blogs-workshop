@@ -33,12 +33,11 @@ const createPost = async (req, res)  => {
             //201 kasi may nagawa
             res.status(201).json(newPost)
         }
-    }catch(err){
-        console.log(err)
-        res.status(422).json(err)
+    }catch(error){
+        console.log(error)
+        res.status(422).json(error)
     }
 }
-
 
 //get all posts
 const getAllPosts = async (req, res) =>{
@@ -51,12 +50,49 @@ const getAllPosts = async (req, res) =>{
     }
 }
 
+//update
 
-module.exports = {
-    getAllPosts,
-    createPost,
-    updatePost
+const updatePost = async (req, res)  => {
+    //Validate if req.body exists
+    if(!req.body){
+        res.status(400).json({error: 'No request body'})
+    }
+
+    const{id} = req.params
+    const{title, author, content} = req.body
+
+    //optionally check if req.file exists
+    const path = req.file?.path ?? null
+
+    try{
+       //find the Post
+       const originalPost = await Post.findById(id)
+       //validate if there is no post, return
+        if(!originalPost){
+            return res.status(404).json({error: 'Original Post Not Found'})
+        }
+
+       // handle deleting of the previous photo
+       if(originalPost.cover_photo && path){
+            deleteFile(originalPost.cover_photo)
+       }
+        //only delete the prev photo if there is an existing photo
+       //update the fields of the original post
+        originalPost.title = title;
+        originalPost.author = author;
+        originalPost.content = content;
+        originalPost.cover_photo = path;
+
+       //save post
+        const updatedPost = await originalPost.save();
+       //return
+       res.status(200).json(updatedPost)
+    }catch(error){
+        console.log(error)
+        res.status(422).json(error)
+    }
 }
+
 
 const showPost = async (req, res) => {
     try {
@@ -71,66 +107,40 @@ const showPost = async (req, res) => {
 
         res.status(200).json(post)
     } catch (error) {
+        console.log(error)
         res.status(404).json({ error: 'Post not found' })
     }
 }
 
-
-
-//update
-
-const updatePost = async (req, res)  => {
-    //Validate if req.body exists
-    if(!req.body){
-    }
-
-    const{id} = req.params
-    const{title, author, content} = req.body
-
-    //optionally check if req.file exists
-    const path = req.file?.path ?? null
-
-    try{
-       //find the Post
-       const orignalPost = await Post.findById(id)
-       //validate if there is no post, return
-        if(!originalPost){
-            return res.status(404).json({error: 'Original Post Not Found'})
-        }
-
-       // ? handle deleting of the previous photo
-        //only delete the prev photo if there is an existing photo
-       //update the fields of the original post
-        originalPost.title = title;
-        originalPost.author = author;
-        originalPost.content = content;
-        originalPost.cover_photo = path;
-
-       //save post
-        const updatedPost = await originalPost.save();
-       //return
-       res.status(200).json(updatedPost)
-    }catch(err){
-        console.log(err)
-        res.status(422).json(err)
-    }
+module.exports = {
+    getAllPosts,
+    createPost,
+    updatePost
 }
+
 //delete
 
 const deletePost = async (req, res) => {
-    const { id } = req.params
+    try {
+        const { id } = req.params
 
-    const post = await Post.findByIdAndDelete(id)
+        const post = await Post.findByIdAndDelete(id)
 
-    if (!post) {
-        return res.status(404).json({ message: 'post not found' })
+        if (!post) {
+            return res.status(404).json({ error: 'Post Not Found' })
+        }
+
+        res.json(post)
+
+        if(post.cover_photo){
+            deleteFile(post.cover_photo)
+        }
+
+        res.status(200).json({ message: 'Successfully deleted post!' })
+    } catch (error) {
+        console.log(error)
+        res.status(404).json({ error: 'Post Not Found' })
     }
-
-    if(post.cover_photo){
-        deleteFile(post.cover_photo)
-    }
-
-    res.status(200).json({ message: 'Successfully deleted post!' })
 }
 
 module.exports = {
