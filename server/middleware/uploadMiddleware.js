@@ -8,6 +8,7 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const uniquePrefix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        // Example: 123612783612783612367851-cutiepie.jpg
         cb(null, uniquePrefix + '-' +  file.originalname)
     },
 })

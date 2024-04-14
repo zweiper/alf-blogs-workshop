@@ -4,8 +4,8 @@ async function deleteFile(filePath) {
     try {
         await fs.unlink(filePath)
         console.log(`File ${filePath} has been deleted.`)
-    } catch (error) {
-        console.error(error)
+    } catch (err) {
+        console.error(err)
     }
 }
 

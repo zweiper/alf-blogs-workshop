@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const postSchema = mongoose.Schema({
-    title:{
+    title: {
         type: String,
         required: [true, 'Please add a title']
     },
@@ -10,15 +10,16 @@ const postSchema = mongoose.Schema({
     },
     content: {
         type: String,
-        required: [true, 'Please add a content']
+        required: [true, 'Please add content']
     },
-    cover_photo:{
+    cover_photo: {
         type: String
     },
-    date:{
+    date: {
         type: Date,
         default: Date.now()
     }
 })
 
+// Create Model for Posts
 module.exports = mongoose.model('Post', postSchema)
